@@ -1,0 +1,74 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: Sentri smart visitor counter API and DynamoDB storage
+Globals:
+  Function:
+    Runtime: nodejs22.x
+    Timeout: 10
+    MemorySize: 256
+    Environment:
+      Variables:
+        TABLE_NAME: !Ref VisitorTable
+        WORKSPACE_ID: !Ref WorkspaceId
+        ALLOWED_ORIGIN: !Ref AllowedOrigin
+Parameters:
+  WorkspaceId:
+    Type: String
+    Default: demo
+    Description: Identifier used to partition workspace events.
+  AllowedOrigin:
+    Type: String
+    Default: '*'
+    Description: Restrict this to the deployed frontend origin for production.
+Resources:
+  VisitorApi:
+    Type: AWS::Serverless::HttpApi
+    Properties:
+      CorsConfiguration:
+        AllowOrigins: [!Ref AllowedOrigin]
+        AllowHeaders: [content-type, authorization]
+        AllowMethods: [GET, POST, PUT, OPTIONS]
+        MaxAge: 600
+  VisitorFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: lambda/
+      Handler: index.handler
+      Policies:
+        - Version: '2012-10-17'
+          Statement:
+            - Effect: Allow
+              Action: [dynamodb:GetItem, dynamodb:Query, dynamodb:PutItem, dynamodb:UpdateItem, dynamodb:TransactWriteItems]
+              Resource: !GetAtt VisitorTable.Arn
+      Events:
+        CatchAll:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref VisitorApi
+            Path: /api/{proxy+}
+            Method: ANY
+  VisitorTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: pk
+          AttributeType: S
+        - AttributeName: sk
+          AttributeType: S
+      KeySchema:
+        - AttributeName: pk
+          KeyType: HASH
+        - AttributeName: sk
+          KeyType: RANGE
+      PointInTimeRecoverySpecification:
+        PointInTimeRecoveryEnabled: true
+      SSESpecification:
+        SSEEnabled: true
+Outputs:
+  ApiBaseUrl:
+    Description: Set this as apiBaseUrl in src/config.js. The URL ends in a slash.
+    Value: !Sub 'https://${VisitorApi}.execute-api.${AWS::Region}.${AWS::URLSuffix}'
+  VisitorTableName:
+    Value: !Ref VisitorTable
+

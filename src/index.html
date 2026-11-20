@@ -1,0 +1,314 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#0b1725">
+<title>Sentri — Smart Visitor Counter</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap');
+:root{--bg:#f4f6f8;--panel:#fff;--ink:#17212e;--muted:#778391;--line:#e8edf1;--nav:#0b1725;--mint:#a6f1d2;--shadow:0 8px 28px #263b5010}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:14px 'DM Sans',sans-serif}
+button,select{font:inherit}button{cursor:pointer}
+.app{min-height:100vh;display:grid;grid-template-columns:232px 1fr}
+.sidebar{background:var(--nav);color:#ecf2f7;padding:25px 16px;display:flex;flex-direction:column}
+.brand{display:flex;align-items:center;gap:11px;padding:0 10px 32px;font:800 19px Manrope,sans-serif;letter-spacing:-.7px}
+.brandmark{width:32px;height:32px;border-radius:10px;background:var(--mint);display:grid;place-items:center;color:#0b3025}
+.brandmark svg{width:19px}
+.workspace{font-size:10px;color:#8291a1;text-transform:uppercase;letter-spacing:1.6px;margin:0 11px 10px}
+.nav{display:grid;gap:5px}
+.nav button{border:0;background:transparent;color:#a9b5c1;text-align:left;padding:11px 12px;border-radius:8px;display:flex;align-items:center;gap:12px;font-weight:600}
+.nav button.active{background:#1d2b39;color:#fff}
+.nav button span{font-size:17px;width:19px;text-align:center}
+.side-foot{margin-top:auto}
+.cloud-card{border:1px solid #293a49;background:#122131;border-radius:10px;padding:13px;margin:8px 2px 17px}
+.cloud-card small{color:#94a3b0}
+.cloud-status{display:flex;align-items:center;gap:7px;color:#d9e7df;margin-top:9px;font-size:12px}
+.dot{width:7px;height:7px;border-radius:50%;background:#43cf92;box-shadow:0 0 0 3px #43cf9225}
+.profile{display:flex;align-items:center;gap:10px;padding:13px 8px 0;border-top:1px solid #243241}
+.avatar{width:32px;height:32px;border-radius:50%;background:#27394a;color:#d2e4dd;display:grid;place-items:center;font-size:11px;font-weight:700}
+.profile strong{font-size:12px}
+.profile small{display:block;color:#8291a1;font-size:11px;margin-top:2px}
+.main{padding:30px 40px 44px;max-width:1600px;width:100%;margin:auto}
+.topbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:25px}
+.crumb{font-size:12px;color:var(--muted)}
+.crumb b{color:#344251;font-weight:600}
+.top-actions{display:flex;align-items:center;gap:12px}
+.live-tag{background:#e2f5ec;color:#21845f;border-radius:20px;padding:7px 10px;font-size:11px;font-weight:700;display:flex;align-items:center;gap:7px}
+.live-tag .dot{width:6px;height:6px}
+.iconbtn{width:35px;height:35px;background:#fff;border:1px solid var(--line);border-radius:9px;color:#657381}
+.heading{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:22px}
+.eyebrow{text-transform:uppercase;font-size:10px;letter-spacing:1.8px;color:#788794;font-weight:700;margin-bottom:8px}
+.heading h1{font:800 27px Manrope,sans-serif;letter-spacing:-1px;margin:0}
+.heading p{margin:6px 0 0;color:var(--muted);font-size:13px}
+.select{background:#fff;border:1px solid var(--line);border-radius:8px;padding:10px 13px;color:#344251;font-weight:600}
+.metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:16px}
+.card{background:var(--panel);border:1px solid #ebeff2;border-radius:12px;box-shadow:var(--shadow)}
+.metric{padding:17px 18px 15px}
+.metric-head{display:flex;justify-content:space-between;align-items:center;color:#697785;font-size:12px;font-weight:600}
+.metric-icon{width:29px;height:29px;border-radius:8px;display:grid;place-items:center;font-size:15px;background:#eef7f3;color:#21845f}
+.metric-value{font:800 28px Manrope,sans-serif;letter-spacing:-1px;margin:12px 0 4px}
+.metric-sub{color:#8b97a2;font-size:11px}
+.positive{color:#16865f;font-weight:700}
+.meter{height:5px;background:#eef1f3;border-radius:5px;margin-top:12px;overflow:hidden}
+.meter i{display:block;height:100%;background:#48be8f;border-radius:5px;transition:width .3s}
+.grid{display:grid;grid-template-columns:minmax(0,1.7fr) minmax(270px,.8fr);gap:16px;margin-bottom:16px}
+.chart-card,.counter-card,.log-card{padding:19px 20px}
+.card-title{display:flex;justify-content:space-between;align-items:center}
+.card-title h2{font:700 14px Manrope,sans-serif;margin:0}
+.card-title p{font-size:11px;color:#8b97a2;margin:4px 0 0}
+.segmented{display:flex;background:#f3f5f7;padding:3px;border-radius:7px;gap:2px}
+.segmented button{border:0;background:transparent;border-radius:5px;padding:5px 9px;color:#7b8792;font-size:10px}
+.segmented button.active{background:#fff;color:#23313f;box-shadow:0 1px 3px #182b3a1a}
+.chart-wrap{height:202px;position:relative;margin-top:20px}
+.chart-wrap svg{width:100%;height:100%;overflow:visible}
+.chart-grid{stroke:#eef1f3;stroke-dasharray:3 4}
+.chart-label{font:10px 'DM Sans';fill:#99a3ad}
+.line-in{fill:none;stroke:#35ae7b;stroke-width:2.5}
+.line-out{fill:none;stroke:#7896d5;stroke-width:2.2}
+.area{fill:url(#area)}
+.legend{display:flex;gap:18px;color:#778391;font-size:10px}
+.legend span{display:flex;align-items:center;gap:6px}
+.legend i{width:7px;height:7px;border-radius:50%;background:#35ae7b}
+.legend span+span i{background:#7896d5}
+.counter-card{display:flex;flex-direction:column}
+.counter-card .card-title{margin-bottom:14px}
+.counter-big{background:#f5faf7;border:1px solid #e4f2eb;border-radius:10px;padding:15px;text-align:center}
+.counter-big small{display:block;color:#718178;font-size:11px}
+.counter-big strong{display:block;font:800 39px Manrope,sans-serif;letter-spacing:-1.5px;margin:5px 0 2px}
+.counter-big em{font-style:normal;font-size:10px;color:#43836a}
+.controls{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:13px}
+.control{padding:11px 8px;border-radius:8px;border:1px solid #d8e8df;background:#f0faf5;color:#237c58;font-weight:700;font-size:12px;transition:.15s}
+.control:hover{background:#ddf5e8;transform:translateY(-1px)}
+.control.exit{border-color:#dce4f4;background:#f1f5fc;color:#5575b6}
+.control.exit:hover{background:#e5edfb}
+.sensor{display:flex;align-items:center;justify-content:space-between;margin-top:auto;padding-top:18px;color:#788590;font-size:11px}
+.sensor span{display:flex;align-items:center;gap:7px}
+.sensor .dot{background:#43bd86}
+.log-card{padding-bottom:7px}
+.table{width:100%;border-collapse:collapse;margin-top:13px}
+.table th{text-align:left;color:#909ba6;font-size:10px;font-weight:600;padding:9px 7px;border-bottom:1px solid var(--line)}
+.table td{padding:11px 7px;border-bottom:1px solid #f0f2f4;font-size:11px;color:#566270}
+.table tr:last-child td{border-bottom:0}
+.badge{display:inline-flex;align-items:center;gap:5px;padding:4px 7px;border-radius:20px;background:#e9f6ef;color:#22835d;font-size:10px;font-weight:700}
+.badge.out{background:#eef2fa;color:#627bb0}
+.badge i{width:5px;height:5px;background:currentColor;border-radius:50%}
+.id{font:11px 'DM Mono',monospace;color:#86919b}
+.source{color:#788590}
+.empty{text-align:center;padding:30px!important;color:#9aa4ad!important}
+.toast{position:fixed;right:24px;bottom:24px;background:#132335;color:white;padding:12px 16px;border-radius:9px;box-shadow:0 7px 25px #0a172444;opacity:0;transform:translateY(8px);transition:.2s;pointer-events:none;font-size:12px}
+.toast.show{opacity:1;transform:translateY(0)}
+.reset{border:0;background:transparent;color:#87939e;font-size:10px}
+.footer{display:flex;justify-content:space-between;color:#98a2ac;font-size:10px;padding:13px 3px}
+.footer b{color:#6f7d88;font-weight:500}
+.main.alt .heading,.main.alt .metrics,.main.alt>.grid,.main.alt>.log-card,.main.alt>.footer{display:none}
+.page-view{background:#fff;border:1px solid #ebeff2;border-radius:12px;padding:23px;box-shadow:var(--shadow);min-height:360px}
+.page-view h2{font:800 20px Manrope,sans-serif;letter-spacing:-.5px;margin:0}
+.page-view .lead{color:var(--muted);margin:6px 0 22px}
+.view-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:13px}
+.view-tile{padding:17px;border:1px solid var(--line);border-radius:10px}
+.view-tile small{color:var(--muted)}
+.view-tile strong{display:block;font:700 22px Manrope,sans-serif;margin:9px 0 5px}
+.view-tile p{margin:0;color:#83909b;font-size:11px}
+.device-row,.setting-row{display:flex;justify-content:space-between;align-items:center;padding:15px 4px;border-bottom:1px solid var(--line);gap:15px}
+.device-name{font-weight:700}
+.device-name small,.setting-row small{display:block;color:var(--muted);font-weight:400;margin-top:4px}
+.setting-row:last-child{border:0}
+.setting-input{width:105px;padding:9px;border:1px solid var(--line);border-radius:7px}
+.action-btn{background:#142637;color:white;border:0;border-radius:7px;padding:10px 14px;font-weight:700}
+@media(max-width:1000px){
+  .app{grid-template-columns:190px 1fr}
+  .main{padding:24px}
+  .metrics{grid-template-columns:repeat(2,1fr)}
+  .grid{grid-template-columns:1fr}
+  .counter-card{min-height:270px}
+}
+@media(max-width:650px){
+  .app{grid-template-columns:1fr}
+  .sidebar{padding:10px 13px;display:block}
+  .brand{padding:0 5px 10px}
+  .brandmark{width:28px;height:28px}
+  .workspace,.side-foot{display:none}
+  .nav{display:flex;overflow:auto;gap:3px}
+  .nav button{padding:8px 10px;font-size:11px;white-space:nowrap}
+  .nav button span{font-size:14px}
+  .main{padding:20px 14px}
+  .heading{align-items:flex-start;gap:10px;flex-direction:column}
+  .heading h1{font-size:24px}
+  .metrics{gap:9px}
+  .metric{padding:13px}
+  .metric-value{font-size:24px}
+  .metric-head{font-size:11px}
+  .grid{gap:10px}
+  .chart-card,.counter-card,.log-card{padding:15px}
+  .table th:nth-child(4),.table td:nth-child(4){display:none}
+  .footer{font-size:9px}
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brandmark">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M4 19V9m5 10V5m6 14v-7m5 7V3" stroke-linecap="round"/>
+          <path d="M2 21h20" stroke-linecap="round"/>
+        </svg>
+      </div>
+      sentri<span style="color:#8b9aa8;font-weight:500">/</span>
+    </div>
+    <div class="workspace">Workspace</div>
+    <nav class="nav">
+      <button class="active" data-page="overview" onclick="navTo('overview')"><span>▦</span>Overview</button>
+      <button data-page="history" onclick="navTo('history')"><span>◷</span>Visitor history</button>
+      <button data-page="devices" onclick="navTo('devices')"><span>⌁</span>Devices</button>
+      <button data-page="reports" onclick="navTo('reports')"><span>▤</span>Reports</button>
+      <button data-page="settings" onclick="navTo('settings')"><span>⚙</span>Settings</button>
+    </nav>
+    <div class="side-foot">
+      <div class="cloud-card">
+        <small>Cloud connection</small>
+        <div class="cloud-status"><i class="dot"></i><span id="connectionLabel">Local demo · ready</span></div>
+      </div>
+      <div class="profile">
+        <div class="avatar">AC</div>
+        <div><strong>A. Naga Chaithanya</strong><small>Workspace admin</small></div>
+      </div>
+    </div>
+  </aside>
+
+  <main class="main">
+    <div class="topbar">
+      <div class="crumb">Workspace&nbsp; / &nbsp;<b>Overview</b></div>
+      <div class="top-actions">
+        <span class="live-tag" id="liveTag"><i class="dot"></i> DEMO</span>
+        <button class="iconbtn" aria-label="Notifications" onclick="notify('You’re all caught up.')">♧</button>
+      </div>
+    </div>
+
+    <div class="heading">
+      <div>
+        <div class="eyebrow"><span id="todayLabel"></span></div>
+        <h1>Visitor overview</h1>
+        <p>See who’s on site and how your space is moving.</p>
+      </div>
+      <select id="period" class="select" aria-label="Date range">
+        <option value="Today">Today</option>
+        <option value="Week">This week</option>
+        <option value="Month">This month</option>
+      </select>
+    </div>
+
+    <section class="metrics">
+      <article class="card metric">
+        <div class="metric-head">Currently inside <span class="metric-icon">♙</span></div>
+        <div id="inside" class="metric-value">24</div>
+        <div class="metric-sub"><span class="positive">● Within capacity</span> · limit 80</div>
+        <div class="meter"><i id="meter" style="width:30%"></i></div>
+      </article>
+      <article class="card metric">
+        <div class="metric-head">Total visitors today <span class="metric-icon" style="background:#eef2fc;color:#6381c2">↗</span></div>
+        <div id="total" class="metric-value">186</div>
+        <div class="metric-sub"><span class="positive">↑ 12.8%</span> vs. yesterday</div>
+      </article>
+      <article class="card metric">
+        <div class="metric-head">Peak occupancy <span class="metric-icon" style="background:#fff6e8;color:#c18a32">⌃</span></div>
+        <div id="peak" class="metric-value">42</div>
+        <div class="metric-sub">Reached at <b>11:42 AM</b></div>
+      </article>
+      <article class="card metric">
+        <div class="metric-head">Avg. visit duration <span class="metric-icon" style="background:#f2eefb;color:#8067ba">◷</span></div>
+        <div class="metric-value">38 <small style="font-size:15px;letter-spacing:0">min</small></div>
+        <div class="metric-sub"><span class="positive">↓ 4 min</span> vs. last week</div>
+      </article>
+    </section>
+
+    <section class="grid">
+      <article class="card chart-card">
+        <div class="card-title">
+          <div><h2>Visitor traffic</h2><p>Hourly entries and exits</p></div>
+          <div class="segmented">
+            <button class="active" data-period="Today">Today</button>
+            <button data-period="Week">Week</button>
+            <button data-period="Month">Month</button>
+          </div>
+        </div>
+        <div class="chart-wrap">
+          <svg viewBox="0 0 700 210" preserveAspectRatio="none" role="img" aria-label="Visitor entries and exits chart">
+            <defs>
+              <linearGradient id="area" x1="0" x2="0" y1="0" y2="1">
+                <stop offset="0" stop-color="#48be8f" stop-opacity=".16"/>
+                <stop offset="1" stop-color="#48be8f" stop-opacity="0"/>
+              </linearGradient>
+            </defs>
+            <g>
+              <line class="chart-grid" x1="34" y1="20" x2="690" y2="20"/>
+              <line class="chart-grid" x1="34" y1="60" x2="690" y2="60"/>
+              <line class="chart-grid" x1="34" y1="100" x2="690" y2="100"/>
+              <line class="chart-grid" x1="34" y1="140" x2="690" y2="140"/>
+              <line class="chart-grid" x1="34" y1="180" x2="690" y2="180"/>
+              <text class="chart-label" x="4" y="24">50</text>
+              <text class="chart-label" x="4" y="64">38</text>
+              <text class="chart-label" x="4" y="104">25</text>
+              <text class="chart-label" x="4" y="144">13</text>
+              <text class="chart-label" x="10" y="184">0</text>
+            </g>
+            <path class="area" d="M34 155 C75 151 78 125 126 119 S180 140 222 103 S268 79 310 92 S354 52 398 60 S443 82 486 48 S532 35 574 60 S620 40 690 24 L690 180 L34 180Z"/>
+            <path class="line-in" d="M34 155 C75 151 78 125 126 119 S180 140 222 103 S268 79 310 92 S354 52 398 60 S443 82 486 48 S532 35 574 60 S620 40 690 24"/>
+            <path class="line-out" d="M34 166 C80 165 85 144 126 141 S180 155 222 128 S267 100 310 119 S355 75 398 84 S445 104 486 75 S531 61 574 85 S625 68 690 50"/>
+            <g class="chart-label">
+              <text x="32" y="202">8 AM</text><text x="164" y="202">10 AM</text>
+              <text x="296" y="202">12 PM</text><text x="428" y="202">2 PM</text>
+              <text x="560" y="202">4 PM</text><text x="660" y="202">6 PM</text>
+            </g>
+          </svg>
+        </div>
+        <div class="legend"><span><i></i> Entries</span><span><i></i> Exits</span></div>
+      </article>
+
+      <article class="card counter-card">
+        <div class="card-title">
+          <div><h2>Live counter</h2><p>Front entrance · Sensor A1</p></div>
+          <button class="reset" onclick="resetDemo()">Reset demo</button>
+        </div>
+        <div class="counter-big">
+          <small>People currently inside</small>
+          <strong id="liveCount">24</strong>
+          <em>of 80 capacity</em>
+        </div>
+        <div class="controls">
+          <button class="control" onclick="record('IN')">＋ &nbsp; Record entry</button>
+          <button class="control exit" onclick="record('OUT')">− &nbsp; Record exit</button>
+        </div>
+        <div class="sensor"><span><i class="dot"></i> Sensor connected</span><span>Synced just now</span></div>
+      </article>
+    </section>
+
+    <section class="card log-card">
+      <div class="card-title">
+        <div><h2>Recent activity</h2><p>Live updates from your entrance counter</p></div>
+        <button class="select" style="padding:8px 11px;font-size:11px" onclick="downloadCSV()">↓ &nbsp; Export CSV</button>
+      </div>
+      <table class="table">
+        <thead><tr><th>EVENT ID</th><th>TIME</th><th>TYPE</th><th>SOURCE</th><th>STATUS</th></tr></thead>
+        <tbody id="logBody"></tbody>
+      </table>
+    </section>
+
+    <div class="footer">
+      <span>Sentri Visitor Intelligence <b>·</b> Demo workspace</span>
+      <span>Connecting to local demo API</span>
+    </div>
+    <div id="pageView" hidden></div>
+  </main>
+</div>
+<div id="toast" class="toast" role="status"></div>
+
+<script src="/config.js" defer></script>
+<script src="/app.js" defer></script>
+</body>
+</html>
+
+

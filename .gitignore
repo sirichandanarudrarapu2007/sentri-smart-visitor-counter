@@ -1,0 +1,6 @@
+node_modules/
+.aws-sam/
+local/sentri-data.json
+.env
+.env.*
+!.env.example

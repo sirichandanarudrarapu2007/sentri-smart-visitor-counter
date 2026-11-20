@@ -1,0 +1,17 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Sentri: Run local demo",
+      "type": "node",
+      "request": "launch",
+      "program": "${workspaceFolder}/server.mjs",
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "env": {
+        "PORT": "4173"
+      },
+      "skipFiles": ["<node_internals>/**"]
+    }
+  ]
+}
